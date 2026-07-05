@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>🎀 عيد ميلاد سيدرا الأول - SIDRA 1st Birthday</title>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Arial', 'Tahoma', sans-serif;
+      background: #0a0a0a;
+    }
+    #info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      text-align: center;
+      color: #fff0f5;
+      pointer-events: none;
+      z-index: 10;
+      text-shadow: 0 0 25px rgba(255, 105, 180, 0.9), 0 0 50px rgba(255, 20, 147, 0.6);
+    }
+    .name-title {
+      font-size: clamp(3.5rem, 11vw, 6rem);
+      margin: 0;
+      font-weight: 900;
+      letter-spacing: 5px;
+      animation: softGlow 2.5s infinite alternate;
+      color: #ff69b4;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+    .sub-text {
+      font-size: 2rem;
+      margin-top: -5px;
+      font-weight: bold;
+      color: #ffb6c1;
+      letter-spacing: 3px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: inline-block;
+      padding: 5px 25px;
+      border-radius: 40px;
+    }
+    .age-badge {
+      font-size: 1.8rem;
+      background: #ff85a2;
+      color: white;
+      padding: 5px 25px;
+      border-radius: 30px;
+      display: inline-block;
+      margin-top: 10px;
+      box-shadow: 0 0 30px #ff4d79;
+    }
+    @keyframes softGlow {
+      0% { text-shadow: 0 0 20px #ff99cc, 0 0 40px #ff6699; }
+      100% { text-shadow: 0 0 40px #ffccdd, 0 0 80px #ff3388; }
+    }
+    .instruction {
+      position: absolute;
+      bottom: 25px;
+      left: 20px;
+      right: 20px;
+      text-align: center;
+      color: #ffb6c1;
+      font-size: 1.1rem;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border-radius: 40px;
+      backdrop-filter: blur(8px);
+      margin: 0 auto;
+      width: fit-content;
+      pointer-events: none;
+      font-weight: bold;
+      border: 1px solid #ff69b4;
+    }
+    canvas {
+      display: block;
+    }
+    #celebrateBtn {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      background: linear-gradient(45deg, #ff1493, #ff69b4);
+      border: none;
+      color: white;
+      font-size: 1.8rem;
+      font-weight: bold;
+      padding: 16px 45px;
+      border-radius: 60px;
+      cursor: pointer;
+      box-shadow: 0 0 35px #ff1493, 0 0 70px #ff69b4;
+      letter-spacing: 3px;
+      transition: all 0.3s ease;
+      font-family: 'Georgia', serif;
+      text-shadow: 0 0 10px white;
+      border: 2px solid #ffb6c1;
+    }
+    #celebrateBtn:hover {
+      background: linear-gradient(45deg, #ff69b4, #ff1493);
+      box-shadow: 0 0 55px #ff69b4, 0 0 90px #ff1493;
+      transform: translateX(-50%) scale(1.05);
+    }
+    #celebrateBtn:active {
+      transform: translateX(-50%) scale(0.96);
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <h1 class="name-title">🎀 سيدرا 🎀</h1>
+    <div class="sub-text">كل عام وأنتِ أميرة</div>
+    <div class="age-badge">✨ سنة أولى ✨</div>
+  </div>
+  <div class="instruction">🌸 اسحبي الماوس لتدوير الكعكة | لمس الشاشة للتكبير 🌸</div>
+  <button id="celebrateBtn">🎈 اضغطي للاحتفال 🎈</button>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // --- المشهد الأسود والكاميرا ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a0f);
+    
+    // نجوم متلألئة في الخلفية
+    const starsGeometry = new THREE.BufferGeometry();
+    const starsCount = 1000;
+    const starsPositions = new Float32Array(starsCount * 3);
+    const starsColors = new Float32Array(starsCount * 3);
+    for (let i = 0; i < starsCount * 3; i += 3) {
+      starsPositions[i] = (Math.random() - 0.5) * 45;
+      starsPositions[i+1] = (Math.random() - 0.5) * 22 + 5;
+      starsPositions[i+2] = (Math.random() - 0.5) * 35;
+      
+      const colorRand = Math.random();
+      let r, g, b;
+      if (colorRand < 0.7) { r=1.0; g=0.8; b=0.9; }
+      else if (colorRand < 0.9) { r=1.0; g=0.9; b=0.7; }
+      else { r=1.0; g=0.7; b=0.8; }
+      starsColors[i] = r;
+      starsColors[i+1] = g;
+      starsColors[i+2] = b;
+    }
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
+    starsGeometry.setAttribute('color', new THREE.BufferAttribute(starsColors, 3));
+    const starsMat = new THREE.PointsMaterial({
+      size: 0.1,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.9
+    });
+    const stars = new THREE.Points(starsGeometry, starsMat);
+    scene.add(stars);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 50);
+    camera.position.set(5.2, 3.2, 7.2);
+    camera.lookAt(0, 1.3, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x0a0a0f);
+    document.body.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.body.appendChild(labelRenderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.rotateSpeed = 0.7;
+    controls.target.set(0, 1.35, 0);
+    controls.update();
+    controls.minDistance = 3.2;
+    controls.maxDistance = 14;
+    controls.maxPolarAngle = Math.PI / 1.7;
+
+    // إضاءة دراماتيكية
+    const ambientLight = new THREE.AmbientLight(0x221122);
+    scene.add(ambientLight);
+    
+    const mainLight = new THREE.DirectionalLight(0xffeef5, 1.3);
+    mainLight.position.set(4, 9, 5);
+    mainLight.castShadow = true;
+    mainLight.receiveShadow = true;
+    mainLight.shadow.mapSize.width = 1024;
+    mainLight.shadow.mapSize.height = 1024;
+    mainLight.shadow.camera.near = 0.5;
+    mainLight.shadow.camera.far = 30;
+    mainLight.shadow.camera.left = -7;
+    mainLight.shadow.camera.right = 7;
+    mainLight.shadow.camera.top = 7;
+    mainLight.shadow.camera.bottom = -4;
+    scene.add(mainLight);
+    
+    const pinkLight = new THREE.PointLight(0xff1493, 1.2, 9);
+    pinkLight.position.set(2.5, 2.8, 3.2);
+    scene.add(pinkLight);
+    
+    const goldLight = new THREE.PointLight(0xffb6c1, 0.9, 8);
+    goldLight.position.set(-2.8, 2, -2.5);
+    scene.add(goldLight);
+
+    // --- الكعكة الأنيقة ---
+    const cakeGroup = new THREE.Group();
+    
+    const darkPinkMat = new THREE.MeshStandardMaterial({ color: 0xd84b7a, roughness: 0.25, metalness: 0.2 });
+    const roseMat = new THREE.MeshStandardMaterial({ color: 0xc72c5c, roughness: 0.3, metalness: 0.25 });
+    const creamMat = new THREE.MeshStandardMaterial({ color: 0xfff0f5, roughness: 0.2, metalness: 0.1 });
+    const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.2, metalness: 0.7 });
+    const plateMat = new THREE.MeshStandardMaterial({ color: 0x2c2c2c, roughness: 0.3, metalness: 0.6 });
+    
+    const plate = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.75, 0.3, 48), plateMat);
+    plate.position.y = 0.15;
+    plate.castShadow = true;
+    plate.receiveShadow = true;
+    cakeGroup.add(plate);
+    
+    const plateRim = new THREE.Mesh(new THREE.TorusGeometry(1.68, 0.1, 16, 64), goldMat);
+    plateRim.rotation.x = Math.PI/2;
+    plateRim.position.y = 0.3;
+    plateRim.castShadow = true;
+    plateRim.receiveShadow = true;
+    cakeGroup.add(plateRim);
+    
+    const bottomLayer = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.4, 0.95, 48), darkPinkMat);
+    bottomLayer.position.y = 0.78;
+    bottomLayer.castShadow = true;
+    bottomLayer.receiveShadow = true;
+    cakeGroup.add(bottomLayer);
+    
+    const goldBand = new THREE.Mesh(new THREE.TorusGeometry(1.38, 0.07, 16, 64), goldMat);
+    goldBand.rotation.x = Math.PI/2;
+    goldBand.position.y = 0.98;
+    goldBand.castShadow = true;
+    goldBand.receiveShadow = true;
+    cakeGroup.add(goldBand);
+    
+    const filling = new THREE.Mesh(new THREE.CylinderGeometry(1.37, 1.38, 0.2, 48), creamMat);
+    filling.position.y = 1.25;
+    filling.castShadow = true;
+    filling.receiveShadow = true;
+    cakeGroup.add(filling);
+    
+    const topLayer = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.25, 0.85, 48), roseMat);
+    topLayer.position.y = 1.73;
+    topLayer.castShadow = true;
+    topLayer.receiveShadow = true;
+    cakeGroup.add(topLayer);
+    
+    const goldBandTop = new THREE.Mesh(new THREE.TorusGeometry(1.23, 0.06, 16, 64), goldMat);
+    goldBandTop.rotation.x = Math.PI/2;
+    goldBandTop.position.y = 1.93;
+    goldBandTop.castShadow = true;
+    goldBandTop.receiveShadow = true;
+    cakeGroup.add(goldBandTop);
+    
+    const topCream = new THREE.Mesh(new THREE.CylinderGeometry(1.22, 1.23, 0.22, 48), creamMat);
+    topCream.position.y = 2.15;
+    topCream.castShadow = true;
+    topCream.receiveShadow = true;
+    cakeGroup.add(topCream);
+    
+    const addDecorBalls = (radius, yPos, count, color) => {
+      for (let i = 0; i < count; i++) {
+        const angle = (i/count)*Math.PI*2;
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), 
+          new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.2 }));
+        ball.position.set(Math.cos(angle)*radius, yPos, Math.sin(angle)*radius);
+        ball.castShadow = true;
+        ball.receiveShadow = true;
+        cakeGroup.add(ball);
+      }
+    };
+    addDecorBalls(1.35, 0.78, 18, 0xff1493);
+    addDecorBalls(1.2, 1.73, 16, 0xff69b4);
+    
+    // شمعة رئيسية كبيرة
+    const mainCandle = new THREE.Group();
+    const candleBody = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.85, 16), 
+      new THREE.MeshStandardMaterial({ color: 0xfff0f5, roughness: 0.2, emissive: new THREE.Color(0x110000) }));
+    candleBody.position.y = 0.425;
+    candleBody.castShadow = true;
+    candleBody.receiveShadow = true;
+    mainCandle.add(candleBody);
+    
+    const stripe = new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.04, 8, 16), goldMat);
+    stripe.rotation.x = Math.PI/2;
+    stripe.position.y = 0.58;
+    stripe.castShadow = true;
+    mainCandle.add(stripe);
+    
+    const wick = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 6), 
+      new THREE.MeshStandardMaterial({ color: 0x221111 }));
+    wick.position.y = 0.88;
+    wick.castShadow = true;
+    mainCandle.add(wick);
+    
+    const mainFlameGroup = new THREE.Group();
+    mainFlameGroup.position.y = 0.97;
+    const outerFlame = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.26, 10), 
+      new THREE.MeshStandardMaterial({ color: 0xff5500, roughness: 0.1, emissive: new THREE.Color(0xff3300) }));
+    outerFlame.position.y = 0.13;
+    mainFlameGroup.add(outerFlame);
+    const innerFlame = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.19, 8), 
+      new THREE.MeshStandardMaterial({ color: 0xffcc00, roughness: 0.1, emissive: new THREE.Color(0xff8800) }));
+    innerFlame.position.y = 0.13;
+    mainFlameGroup.add(innerFlame);
+    const coreFlame = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6), 
+      new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    coreFlame.position.y = 0.07;
+    mainFlameGroup.add(coreFlame);
+    mainCandle.add(mainFlameGroup);
+    
+    mainCandle.position.set(0, 2.25, 0);
+    cakeGroup.add(mainCandle);
+    
+    // 6 شموع صغيرة حول الكعكة
+    const smallCandles = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (i/6)*Math.PI*2 + 0.2;
+      const radius = 0.88;
+      const sc = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.55, 8), 
+        new THREE.MeshStandardMaterial({ color: 0xffd1dc, roughness: 0.3 }));
+      body.position.y = 0.275;
+      body.castShadow = true;
+      sc.add(body);
+      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.07, 4), 
+        new THREE.MeshStandardMaterial({ color: 0x332211 }));
+      w.position.y = 0.57;
+      sc.add(w);
+      const fg = new THREE.Group();
+      fg.position.y = 0.63;
+      const of = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.16, 8), 
+        new THREE.MeshStandardMaterial({ color: 0xff5500, emissive: new THREE.Color(0xff2200) }));
+      of.position.y = 0.08;
+      fg.add(of);
+      const inf = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 6), 
+        new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: new THREE.Color(0xff7700) }));
+      inf.position.y = 0.08;
+      fg.add(inf);
+      sc.add(fg);
+      sc.position.set(Math.cos(angle)*radius, 2.15, Math.sin(angle)*radius);
+      cakeGroup.add(sc);
+      smallCandles.push({ group: fg, baseY: 0.63, speed: 0.8 + Math.random()*0.7 });
+    }
+    
+    const sprinklesGroup = new THREE.Group();
+    for (let i = 0; i < 120; i++) {
+      const angle = Math.random()*Math.PI*2;
+      const radius = 0.2 + Math.random()*1.0;
+      const sprinkle = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.14, 4), 
+        new THREE.MeshStandardMaterial({ color: new THREE.Color(`hsl(${330 + Math.random()*30}, 80%, 70%)`), roughness: 0.2 }));
+      sprinkle.position.set(Math.cos(angle)*radius, 2.2 + Math.random()*0.22, Math.sin(angle)*radius);
+      sprinkle.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+      sprinkle.castShadow = true;
+      sprinklesGroup.add(sprinkle);
+    }
+    cakeGroup.add(sprinklesGroup);
+    
+    scene.add(cakeGroup);
+    
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(4, 32), 
+      new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.8, transparent: true, opacity: 0.3 }));
+    ground.rotation.x = -Math.PI/2;
+    ground.position.y = -0.15;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // نصوص CSS2D
+    function createLabel(text, color, position, size = '1.4rem') {
+      const div = document.createElement('div');
+      div.textContent = text;
+      div.style.color = color;
+      div.style.fontSize = size;
+      div.style.fontWeight = 'bold';
+      div.style.textShadow = '0 0 20px black, 0 0 30px #ff69b4';
+      div.style.background = 'rgba(0, 0, 0, 0.6)';
+      div.style.padding = '5px 18px';
+      div.style.borderRadius = '25px';
+      div.style.backdropFilter = 'blur(4px)';
+      const label = new CSS2DObject(div);
+      label.position.copy(position);
+      return label;
+    }
+    
+    scene.add(createLabel('🌸 سيدرا 🌸', '#ff1493', new THREE.Vector3(0, 3.2, 0), '2.3rem'));
+    scene.add(createLabel('🎀 1 🎀', '#ff69b4', new THREE.Vector3(1.1, 2.75, 0.7), '1.9rem'));
+    scene.add(createLabel('أميرتنا الصغيرة', '#c71585', new THREE.Vector3(-1.0, 2.65, -0.8), '1.3rem'));
+
+    // --- نظام الفقاعات (بالونات) ---
+    const bubbles = [];
+    const bubbleGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+    
+    function createBubble() {
+      const colors = [0xff69b4, 0xff1493, 0xffb6c1, 0xffd700, 0xff85a2, 0xda70d6];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const material = new THREE.MeshStandardMaterial({ 
+        color: color, 
+        roughness: 0.1, 
+        metalness: 0.1,
+        emissive: new THREE.Color(color).multiplyScalar(0.4),
+        transparent: true,
+        opacity: 0.85
+      });
+      const bubble = new THREE.Mesh(bubbleGeometry, material);
+      bubble.position.set(
+        (Math.random() - 0.5) * 4.5,
+        2.5 + Math.random() * 1.5,
+        (Math.random() - 0.5) * 4.5
+      );
+      bubble.userData = {
+        velocity: new THREE.Vector3(
+          (Math.random() - 0.5) * 0.02,
+          0.015 + Math.random() * 0.04,
+          (Math.random() - 0.5) * 0.02
+        ),
+        life: 1.0,
+        decay: 0.003 + Math.random() * 0.006
+      };
+      bubble.castShadow = true;
+      bubble.receiveShadow = false;
+      scene.add(bubble);
+      bubbles.push(bubble);
+    }
+
+    // --- الصوت (أغنية عيد الميلاد) ---
+    let audioContext = null;
+    let isPlaying = false;
+    
+    function playBirthdayMelody() {
+      if (isPlaying) return;
+      isPlaying = true;
+      
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const notes = [
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 587.33, dur: 0.4 }, // ري
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 659.25, dur: 0.4 }, // فا
+          { freq: 587.33, dur: 0.8 }, // مي
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 587.33, dur: 0.4 }, // ري
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 698.46, dur: 0.4 }, // صول
+          { freq: 659.25, dur: 0.8 }, // فا
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 783.99, dur: 0.4 }, // دو عالي
+          { freq: 659.25, dur: 0.4 }, // فا
+          { freq: 587.33, dur: 0.4 }, // مي
+          { freq: 523.25, dur: 0.8 }, // دو
+          { freq: 466.16, dur: 0.4 }, // سي منخفض
+          { freq: 466.16, dur: 0.4 }, // سي منخفض
+          { freq: 587.33, dur: 0.4 }, // مي
+          { freq: 523.25, dur: 0.4 }, // دو
+          { freq: 659.25, dur: 0.4 }, // فا
+          { freq: 587.33, dur: 0.8 }  // مي
+        ];
+        
+        let time = audioContext.currentTime;
+        notes.forEach(note => {
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = note.freq;
+          gain.gain.setValueAtTime(0.3, time);
+          gain.gain.exponentialRampToValueAtTime(0.01, time + note.dur);
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          osc.start(time);
+          osc.stop(time + note.dur);
+          time += note.dur;
+        });
+      } catch (e) {
+        console.log("الصوت يحتاج تفاعل المستخدم أولاً");
+      }
+    }
+
+    // --- زر الاحتفال ---
+    document.getElementById('celebrateBtn').addEventListener('click', () => {
+      // تشغيل الأغنية
+      playBirthdayMelody();
+      
+      // إطلاق الفقاعات
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          createBubble();
+        }, i * 30);
+      }
+      
+      // تأثير بصري على الزر
+      const btn = document.getElementById('celebrateBtn');
+      btn.style.transform = 'translateX(-50%) scale(1.1)';
+      setTimeout(() => {
+        btn.style.transform = 'translateX(-50%) scale(1)';
+      }, 200);
+    });
+
+    // --- حلقة الرسوم المتحركة ---
+    const clock = new THREE.Clock();
+    
+    function animate() {
+      const time = performance.now() * 0.001;
+      
+      stars.rotation.y += 0.0001;
+      
+      // وميض الشمعة الرئيسية
+      const mainScale = 0.9 + Math.sin(time * 14) * 0.1;
+      mainFlameGroup.scale.set(mainScale, mainScale, mainScale);
+      mainFlameGroup.position.y = 0.97 + Math.sin(time * 16) * 0.015;
+      
+      // وميض الشموع الصغيرة
+      smallCandles.forEach(c => {
+        const s = 0.88 + Math.sin(time * c.speed * 12) * 0.12;
+        c.group.scale.set(s, s, s);
+        c.group.position.y = c.baseY + Math.sin(time * c.speed * 10) * 0.012;
+      });
+      
+      sprinklesGroup.rotation.y += 0.0015;
+      
+      // تحديث الفقاعات
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        b.position.x += b.userData.velocity.x;
+        b.position.y += b.userData.velocity.y;
+        b.position.z += b.userData.velocity.z;
+        b.userData.life -= b.userData.decay;
+        b.material.opacity = b.userData.life * 0.8;
+        b.scale.setScalar(b.userData.life * 0.9 + 0.1);
+        
+        if (b.userData.life <= 0 || b.position.y > 7) {
+          scene.remove(b);
+          b.geometry.dispose();
+          b.material.dispose();
+          bubbles.splice(i, 1);
+        }
+      }
+      
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    
+    animate();
+    
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    console.log('🎀👶 سيدرا - سنة أولى - كل عام وأنتِ أجمل أميرة 👶🎀');
+  </script>
+</body>
+</html>
